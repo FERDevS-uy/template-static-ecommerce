@@ -1,15 +1,17 @@
 ---
-import ListarProductos from "../components/ListarProductos.astro";
-import RenderCategories from "../components/RenderCategories.astro";
-import Layout from "../layouts/Layout.astro";
-import { countCategories } from "../utils/countCategories";
-import { cargarProductos } from "../utils/loadCSV";
+import ListarProductos from "@components/ListarProductos.astro";
+import OfertasBanner from "@components/OfertasBanner.astro";
+import Layout from "@layouts/Layout.astro";
+import { cargarProductos } from "@utils/loadCSV";
+import { config } from "src/config";
 
+const CANT_PRODUCTOS = config.postPerPage;
 const productos = cargarProductos();
-const categorías = countCategories(productos);
+const totalPages = Math.ceil(productos.length / CANT_PRODUCTOS);
+const showProducts = productos.slice(0, CANT_PRODUCTOS);
 ---
 
 <Layout>
-  <RenderCategories categories={categorías} />
-  <ListarProductos products={productos} />
+  <OfertasBanner />
+  <ListarProductos products={showProducts} totalPages={totalPages} />
 </Layout>

@@ -2,77 +2,324 @@
 import { cargarProductos } from "../../utils/loadCSV";
 import Layout from "../../layouts/Layout.astro";
 import { config } from "../../config";
+import NumberInput from "@components/NumberInput.astro";
 
 export function getStaticPaths() {
   const productos = cargarProductos();
+
   return productos.map((p) => {
-    const { id, ...rest } = p;
+    const { id, relacionados, ...rest } = p;
+
+    const productosRelacionados = productos.filter((p) =>
+      relacionados.includes(p.id),
+    );
+
     return {
       params: { id },
-      props: { ...rest },
+      props: { id, productosRelacionados, ...rest },
     };
   });
 }
 
-const { name, img, price, categories, paymentLink, description } = Astro.props;
+const {
+  id,
+  name,
+  img,
+  price,
+  categories,
+  paymentLink,
+  description,
+  productosRelacionados: relacionados,
+} = Astro.props;
+console.log(categories);
 ---
 
-<Layout>
+<Layout
+  pageTitle={`${config.pageTitle} - ${name}`}
+  description={description}
+  pageImage={img[0]}
+>
   <section class="productContainer">
-    <div class="infoBox">
-      <h2>{name}</h2>
-      <p>{description}</p>
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+      <a href="/">{categories}</a> /
+      <a href="/">Accesorios</a> /
+      <span>Gorros</span>
+    </div>
 
-      <div class="categories">
-        {
-          categories.map((c) => (
-            <a href={`${config.base}/categories/${c}`} class="categoryTag">
-              {c}
-            </a>
-          ))
-        }
+    <div class="product_layout">
+      <!-- LEFT IMAGE SECTION -->
+      <div class="gallery">
+        <img class="mainImg" src={img[0]} alt={name} />
+
+        <div class="thumbs">
+          {img.map((i) => <img src={i} alt="" class="thumb" />)}
+        </div>
       </div>
 
-      <span class="price">${price}</span>
+      <!-- RIGHT INFO -->
+      <div class="infoBox">
+        <span class="stock">En Stock</span>
+        <h1 class="name">{name}</h1>
 
-      <div class="paymentsMethods">
-        {
-          paymentLink.map((p) => (
-            <a
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="paymentLink"
-              id="paymentLink"
-            >
-              {p.id}
-            </a>
-          ))
-        }
+        <div class="meta">
+          <p><strong>ID:</strong> {id}</p>
+          <p><strong>Marca:</strong> {categories[0]}</p>
+        </div>
+        <strong>Descripción del Producto:</strong>
+        <p class="description">{description}</p>
+        <strong>Talle:</strong>
+        <div class="sizes">
+          <button class="size">S</button>
+          <button class="size">M</button>
+          <button class="size">L</button>
+          <button class="size">XL</button>
+        </div>
+
+        <div class="priceRow">
+          <span class="price">${price}</span>
+          <NumberInput
+            id="cartQty"
+            name="pasajeros"
+            initialValue={2}
+            min={1}
+            max={10}
+          />
+          <button
+            type="button"
+            id="addToCartBtn"
+            class="buyBtn"
+            data-id={Astro.props.id}
+          >
+            Comprar
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="imgContainer">
-      {img.map((i) => <img src={i} alt="" />)}
-    </div>
+    <!-- RELATED PRODUCTS -->
+
+    {
+      relacionados && relacionados.length > 0 && (
+        <div class="related">
+          <h2>Productos Relacionados:</h2>
+
+          <div class="relatedList">
+            {relacionados.map((prod) => (
+              <div class="card">
+                <div class="cardImg">
+                  <img class="cardImg" src={prod.img[0]} alt={prod.name} />
+                </div>
+                <span class="cardTitle">{prod.name}</span>
+                <span class="cardPrice">${prod.price}</span>
+                <button class="cardBtn">Ver Producto</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
   </section>
 </Layout>
 
 <style>
-  .imgContainer {
-    max-width: 500px;
+  .productContainer {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 1rem;
   }
-  .imgContainer img {
+
+  /**** Breadcrumb *****/
+  .breadcrumb {
+    font-size: 22px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  .breadcrumb a {
+    text-decoration: none;
+    color: #555;
+  }
+
+  /**** Layout *****/
+  .product_layout {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    border-top: 1px solid grey;
+  }
+
+  /**** Gallery *****/
+  .gallery {
+    flex: 2;
+  }
+  .mainImg {
     width: 100%;
-    aspect-ratio: 1/1;
+    border-radius: 12px;
     object-fit: contain;
+    background: #fff;
+    height: 400px;
+  }
+  .thumbs {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .thumb {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    background: white;
+    box-shadow: 0 2px 4px #aaa;
+  }
+
+  /**** Info box *****/
+  .infoBox {
+    flex: 1;
+    padding: 18px;
+  }
+  .stock {
+    background: #53b467;
+    padding: 4px 10px;
+    color: white;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .name {
+    margin: 10px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .meta p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+
+  .description {
+    margin: 10px 0;
+  }
+
+  /**** Sizes *****/
+  .sizes {
+    margin: 10px 0;
+  }
+  .size {
+    background: white;
+    border: 1px solid #aaa;
+    padding: 0 0;
+    cursor: pointer;
+    font-size: 20px;
+    width: 40px;
+    margin-left: 6px;
+  }
+
+  /**** Price & Actions *****/
+  .priceRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
   }
 
   .price {
-    display: block;
+    font-size: 26px;
+    font-weight: bold;
   }
 
-  .paymentLink {
+  .qty {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .qty input {
+    width: 40px;
+    text-align: center;
+  }
+  .qtyBtn {
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+  }
+
+  .buyBtn {
+    background: var(--orange-color);
+    padding: 10px 10px;
+    border-radius: 8px;
+
+    font-size: 1.4rem;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+  }
+
+  /**** Related Products *****/
+  .related {
+    margin-top: 40px;
+  }
+
+  .relatedList {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+  }
+
+  .card {
+    min-width: 180px;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .cardImg {
+    height: 150px;
+    border-radius: 8px;
+  }
+  .cardTitle {
+    font-size: 15px;
+    margin-top: 10px;
+  }
+  .cardPrice {
+    font-weight: bold;
     display: block;
+    margin-top: 6px;
+  }
+  .cardBtn {
+    background: black;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-top: 8px;
+    cursor: pointer;
   }
 </style>
+
+<script>
+  import addToCart from "../../utils/addToCart";
+  const addBtn = document.getElementById("addToCartBtn");
+
+  addBtn?.addEventListener("click", () => {
+    const qtyInput = document.getElementById("cartQty") as HTMLInputElement;
+    const price = document.querySelector(".price") as HTMLSpanElement;
+    const name = document.querySelector(".name") as HTMLHeadingElement;
+    const id = addBtn?.getAttribute("data-id") ?? "";
+    const img = document.querySelector(".thumbs img") as HTMLImageElement;
+
+    const qty = parseInt(qtyInput.value, 10);
+
+    addToCart(
+      id,
+      name.innerText,
+      price.innerText.replace("$", "").replace(",", "."),
+      qty,
+      img.src,
+    );
+
+    // llama a una funcion declarada en header que actualiza el contador del carrito
+    window.updateCartCount && window.updateCartCount();
+    addBtn.textContent = "¡Agregado!";
+    setTimeout(() => (addBtn.textContent = "Agregar al carrito"), 1200);
+  });
+</script>

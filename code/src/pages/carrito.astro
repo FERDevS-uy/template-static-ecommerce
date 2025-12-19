@@ -1,0 +1,57 @@
+---
+import Layout from "../layouts/Layout.astro";
+import styles from "../styles/pages/carrito.module.css";
+import "../styles/components/CartDynamic.css";
+---
+
+<Layout>
+  <section class={styles.cartContainer}>
+    <h1>Carrito de Compras</h1>
+
+    <!-- Tabla de productos -->
+    <table id="cartTable" class={`${styles.cartTable} hidden`}>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Precio</th>
+          <th>Cant.</th>
+          <th>Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="cartList"></tbody>
+    </table>
+
+    <!-- Resumen -->
+    <div id="cartSummary" class={`${styles.cartSummary} hidden`}>
+      <h2>Resumen</h2>
+      <div class={styles.cartSummaryRow}>
+        <span>Subtotal</span>
+        <span id="subtotal">$0</span>
+      </div>
+      <div class={styles.cartSummaryTotal}>
+        <span>Total del pedido</span>
+        <span id="total">$0</span>
+      </div>
+
+      <button id="copyBtn" class={styles.cartBtn}>Copiar pedido</button>
+      <a id="waBtn" class={styles.cartBtn} target="_blank">Enviar por WhatsApp</a>
+      <button id="clearBtn" class={`${styles.cartBtn} ${styles.danger}`}>Vaciar carrito</button>
+    </div>
+
+    <!-- Carrito vacío -->
+    <div id="cartEmpty" class={styles.cartEmpty}>El carrito está vacío.</div>
+  </section>
+</Layout>
+
+<script>
+  import { initCartPage } from "../scripts/pages/carrito";
+  
+  // Initialize on load
+  initCartPage();
+  
+  // Re-initialize for View Transitions
+  document.addEventListener('astro:page-load', () => {
+    initCartPage();
+  });
+</script>

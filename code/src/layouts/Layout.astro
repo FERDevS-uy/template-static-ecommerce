@@ -1,10 +1,29 @@
 ---
-import GlobalStyles from "../components/GlobalStyles.astro";
-import { config } from "../config";
+import GlobalStyles from "./GlobalStyles.astro";
+import { config } from "src/config";
 import Footer from "./Footer.astro";
 import Header from "./Header.astro";
+import { cargarProductos } from "@utils/loadCSV";
+import { countCategories } from "@utils/countCategories";
 
+const productos = cargarProductos();
+const categories = countCategories(productos);
 const isDev = import.meta.env.tienda_DEV === "true";
+const url_href = Astro.url.href;
+
+interface Props {
+  categorySelected?: string;
+  pageTitle?: string;
+  description?: string;
+  pageImage?: string;
+}
+
+const {
+  categorySelected,
+  pageTitle = config.pageTitle,
+  description = config.description,
+  pageImage = `${url_href}favicon.svg`,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -14,10 +33,30 @@ const isDev = import.meta.env.tienda_DEV === "true";
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href=`${config.base}/favicon.svg` />
     <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+
+    <meta itemprop="name" content={pageTitle} />
+    <meta itemprop="description" content={description} />
+    <meta itemprop="image" content={pageImage} />
+
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content={pageTitle} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={pageImage} />
+    <meta property="og:url" content={url_href} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href=`${config.base}/favicon.svg` />
+    <meta name="generator" content={Astro.generator} />
     <title>{config.pageTitle}</title>
   </head>
+
   <body id="body" class={isDev ? "dev" : ""}>
-    <Header />
+    <Header categories={categories} categorySelected={categorySelected} />
 
     <main>
       <slot />
@@ -25,23 +64,27 @@ const isDev = import.meta.env.tienda_DEV === "true";
 
     <Footer />
   </body>
+
+  <GlobalStyles />
 </html>
 
 <style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
+  html {
+    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
   }
 
+  main{
+    display: flex;
+  }
   body {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    color: var(--principal-text-color);
   }
   body.dev::before {
     content: "TEMPLATE";
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
@@ -50,7 +93,14 @@ const isDev = import.meta.env.tienda_DEV === "true";
     font-weight: bold;
     pointer-events: none;
     white-space: nowrap;
-    z-index: 0;
+    z-index: 1000;
+  }
+  /* Quita el scroll del body cuando se abre el menu */
+  body:not(:has(header > .itemsBox.hidden)) {
+    overflow: hidden;
+  }
+
+  main {
+    flex: 1;
   }
 </style>
-<GlobalStyles />
