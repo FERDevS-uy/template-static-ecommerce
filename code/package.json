@@ -12,10 +12,11 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
-    "astro": "5.15.3",
+    "astro": "^5.18.1",
     "astro-icon": "1.1.5",
     "astro-navbar": "2.3.9",
     "dompurify": "^3.3.0",
+    "fuse.js": "^7.1.0",
     "json2csv": "6.0.0-alpha.2",
     "papaparse": "5.5.3",
     "react": "^19.2.0",
@@ -24,6 +25,8 @@
     "string-similarity-js": "2.1.4"
   },
   "devDependencies": {
-    "@types/papaparse": "5.3.16"
+    "@types/papaparse": "5.3.16",
+    "prettier": "^3.8.1",
+    "prettier-plugin-astro": "^0.14.1"
   }
 }

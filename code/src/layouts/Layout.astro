@@ -9,20 +9,24 @@ import { countCategories } from "@utils/countCategories";
 const productos = cargarProductos();
 const categories = countCategories(productos);
 const isDev = import.meta.env.tienda_DEV === "true";
-const url_href = Astro.url.href;
+const url_href = Astro.url.href.endsWith("/")
+  ? Astro.url.href.slice(0, -1)
+  : Astro.url.href;
 
 interface Props {
   categorySelected?: string;
   pageTitle?: string;
   description?: string;
   pageImage?: string;
+  pageId?: string;
 }
 
 const {
   categorySelected,
   pageTitle = config.pageTitle,
   description = config.description,
-  pageImage = `${url_href}favicon.svg`,
+  pageImage = `${url_href}/icono.png`,
+  pageId,
 } = Astro.props;
 ---
 
@@ -31,7 +35,11 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href=`${config.base}/favicon.svg` />
+    <link
+      rel="icon"
+      type="image/png"
+      href=`${import.meta.env.BASE_URL}/icono.png`
+    />
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
 
@@ -53,7 +61,6 @@ const {
       href="https://fonts.googleapis.com/css2?family=Onest:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" type="image/svg+xml" href=`${config.base}/favicon.svg` />
     <meta name="generator" content={Astro.generator} />
     <title>{config.pageTitle}</title>
   </head>
@@ -61,11 +68,11 @@ const {
   <body id="body" class={isDev ? "dev" : ""}>
     <Header categories={categories} categorySelected={categorySelected} />
 
-    <main>
+    <main id={pageId}>
       <slot />
     </main>
 
-    <Footer />
+    <Footer categories={categories} />
   </body>
 
   <GlobalStyles />
@@ -79,11 +86,13 @@ const {
   main {
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
   body {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
+    min-width: 350px;
     color: var(--principal-text-color);
   }
   body.dev::before {
@@ -102,9 +111,5 @@ const {
   /* Quita el scroll del body cuando se abre el menu */
   body:not(:has(header > .itemsBox.hidden)) {
     overflow: hidden;
-  }
-
-  main {
-    flex: 1;
   }
 </style>
